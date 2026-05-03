@@ -1,3 +1,4 @@
+
 const express = require('express')
 const cors = require('cors')
 const pool = require('./db')
@@ -5,6 +6,10 @@ const pool = require('./db')
 const app = express()
 app.use(cors())
 app.use(express.json())
+
+const authRouter = require('./auth')
+const authMiddleware = require('./middleware')
+app.use('/auth',authRouter)
 
 app.get('/', (req, res) => {
   res.json({ message: 'server is running' })
@@ -21,7 +26,7 @@ app.post('/messages', async (req, res) => {
 })
 
 // 获取某个会话的消息
-app.get('/messages/:session_id', async (req, res) => {
+app.get('/messages/:session_id', authMiddleware,async (req, res) => {
   const { session_id } = req.params
   const result = await pool.query(
     'SELECT * FROM messages WHERE session_id = $1 ORDER BY created_at ASC',
