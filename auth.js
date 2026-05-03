@@ -7,6 +7,10 @@ const router = express.Router()
 router.use(express.json())
 
 router.post('/register',async(req,res)=>{
+    console.log('headers:',req.headers['content-type']);
+    console.log('body:',req.body);
+    
+    
     const {email,password}=req.body
     const hashed = await bcrypt.hash(password,10)
     const result= await pool.query(
@@ -17,10 +21,7 @@ router.post('/register',async(req,res)=>{
 })
 
 router.post('/login',async(req,res)=>{
-    console.log('request body:', req.body)
-console.log('content-type:', req.headers['content-type'])
-
-    const{email,password}=req.body
+   const{email,password}=req.body
     const result = await pool.query(
         'SELECT * FROM users WHERE email = $1',
         [email]
