@@ -16,11 +16,12 @@ app.get('/', (req, res) => {
 })
 
 // 保存消息
-app.post('/messages', async (req, res) => {
+app.post('/messages', authMiddleware,async (req, res) => {
   const { session_id, role, content } = req.body
+  const user_id = req.user.id
   const result = await pool.query(
-    'INSERT INTO messages (session_id, role, content) VALUES ($1, $2, $3) RETURNING *',
-    [session_id, role, content]
+    'INSERT INTO messages (session_id, role, content,user_id) VALUES ($1, $2, $3,$4) RETURNING *',
+    [session_id, role, content,user_id]
   )
   res.json(result.rows[0])
 })
@@ -28,9 +29,10 @@ app.post('/messages', async (req, res) => {
 // 获取某个会话的消息
 app.get('/messages/:session_id', authMiddleware,async (req, res) => {
   const { session_id } = req.params
+  const user_id = req.user.id
   const result = await pool.query(
-    'SELECT * FROM messages WHERE session_id = $1 ORDER BY created_at ASC',
-    [session_id]
+    'SELECT * FROM messages WHERE session_id = $1 AND user_id=$2 ORDER BY created_at ASC',
+    [session_id,user_id]
   )
   res.json(result.rows)
 })
@@ -39,21 +41,35 @@ app.listen(3000, () => {
   console.log('server started on port 3000')
 })
 //保存会话
-app.post('/sessions',async(req,res)=>{
+app.post('/sessions',authMiddleware,async(req,res)=>{
   const {id,title}=req.body
+  const user_id = req.user.id
   await pool.query(
-    'INSERT INTO sessions(id,title) VALUES ($1,$2) ON CONFLICT(id) DO UPDATE SET title =$2',
-  [id,title]
+    'INSERT INTO sessions(id,title,user_id) VALUES ($1,$2,$3) ON CONFLICT(id) DO UPDATE SET title =$2',
+  [id,title,user_id]
   )
   res.json({success:true})
 })
 
 //获取所有会话
-app.get('/sessions',async(req,res)=>{
+app.get('/sessions',authMiddleware,async(req,res)=>{
+  const user_id = req.user.id
   const result = await pool.query(
-    'SELECT * FROM sessions ORDER BY created_at ASC'
+    'SELECT * FROM sessions where user_id=$1 ORDER BY created_at ASC',
+    [user_id]
   )
   res.json(result.rows)
 }
 
 )
+
+//删除会话
+app.delete('/sessions/:id',authMiddleware,async(req,res)=>{
+  const {id} = req.params
+  const user_id = req.user.id
+  await pool.query(
+    'DELETE FROM sessions WHERE id = $1 AND user_id = $2',
+    [id,user_id]
+  )
+  res.json({success:true})
+})
