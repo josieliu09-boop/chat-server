@@ -12,6 +12,12 @@ router.post('/register',async(req,res)=>{
     
     
     const {email,password}=req.body
+    if (!email || !password) {
+        return res.status(400).json({message:'Email and password are required'})
+    }
+    if (password.length < 6) {
+        return res.status(400).json({message:'password must be at least 6 characters'})
+    }
     const hashed = await bcrypt.hash(password,10)
     const result= await pool.query(
         'INSERT INTO users (email,password) VALUES ($1,$2) RETURNING id, email',
@@ -21,7 +27,15 @@ router.post('/register',async(req,res)=>{
 })
 
 router.post('/login',async(req,res)=>{
-   const{email,password}=req.body
+
+
+    const{email,password}=req.body
+    if (!email || !password) {
+        return res.status(400).json({message:'Email and password are required'})
+    }
+    if (password.length<6) {
+        return res.status(400).json({message:'password must be at least 6 characters'})
+    }
     const result = await pool.query(
         'SELECT * FROM users WHERE email = $1',
         [email]
