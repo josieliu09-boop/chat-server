@@ -8,7 +8,11 @@ const pool = require('./db')
 const app = express()
 app.use(helmet())
 app.use(morgan('dev'))
-app.use(cors())
+app.use(cors({
+  origin:process.env.NODE_ENV === 'production'?'https://react-chat-demo-sigma.vercel.app':'*',
+  methods:['GET','POST','DELETE','PUT'],
+  allowedHeaders:['Content-Type','authorization']
+}))
 app.use(express.json())
 //限流规则
 const loginLimiter = rateLimit({
