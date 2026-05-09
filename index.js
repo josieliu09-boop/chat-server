@@ -1,3 +1,4 @@
+const morgan = require('morgan')
 const helmet = require('helmet')
 const rateLimit = require('express-rate-limit')
 const express = require('express')
@@ -6,6 +7,7 @@ const pool = require('./db')
 
 const app = express()
 app.use(helmet())
+app.use(morgan('dev'))
 app.use(cors())
 app.use(express.json())
 //限流规则
