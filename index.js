@@ -1,4 +1,5 @@
 
+const rateLimit = require('express-rate-limit')
 const express = require('express')
 const cors = require('cors')
 const pool = require('./db')
@@ -9,10 +10,17 @@ app.use(express.json())
 
 const authRouter = require('./auth')
 const authMiddleware = require('./middleware')
-app.use('/auth',authRouter)
+app.use('/auth',loginLimiter,authRouter)
 
 app.get('/', (req, res) => {
   res.json({ message: 'server is running' })
+})
+
+//限流规则
+const loginLimiter = rateLimit({
+  WindowMs:15*60*1000,//15分钟
+  max:10,//最多10次请求
+  message:{message:'Too many requests,please try again later'}
 })
 
 // 保存消息
