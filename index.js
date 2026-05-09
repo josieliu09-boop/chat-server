@@ -1,12 +1,19 @@
-
+const helmet = require('helmet')
 const rateLimit = require('express-rate-limit')
 const express = require('express')
 const cors = require('cors')
 const pool = require('./db')
 
 const app = express()
+app.use(helmet())
 app.use(cors())
 app.use(express.json())
+//限流规则
+const loginLimiter = rateLimit({
+  WindowMs:15*60*1000,//15分钟
+  max:10,//最多10次请求
+  message:{message:'Too many requests,please try again later'}
+})
 
 const authRouter = require('./auth')
 const authMiddleware = require('./middleware')
@@ -16,12 +23,6 @@ app.get('/', (req, res) => {
   res.json({ message: 'server is running' })
 })
 
-//限流规则
-const loginLimiter = rateLimit({
-  WindowMs:15*60*1000,//15分钟
-  max:10,//最多10次请求
-  message:{message:'Too many requests,please try again later'}
-})
 
 // 保存消息
 app.post('/messages', authMiddleware,async (req, res,next) => {
