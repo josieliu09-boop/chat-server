@@ -50,9 +50,12 @@ app.get('/messages/:session_id', authMiddleware, async (req, res, next) => {
   try {
     const { session_id } = req.params
     const user_id = req.user.id
+    const page = parseInt(req.query.page)|| 1
+    const limit = parseInt(req.query.limit)|| 20
+    const offset = (page - 1) * limit
     const result = await pool.query(
-      'SELECT * FROM messages WHERE session_id = $1 AND user_id=$2 ORDER BY created_at ASC',
-      [session_id, user_id]
+      'SELECT * FROM messages WHERE session_id = $1 AND user_id=$2 ORDER BY created_at ASC LIMIT $3 OFFSET $4',
+      [session_id, user_id,limit,offset]
     )
     res.json(result.rows)
   } catch (error) {
