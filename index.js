@@ -115,6 +115,22 @@ app.delete('/sessions/:id', authMiddleware, async (req, res, next) => {
     client.release()
   }
 })
+//搜索接口
+app.get('/messages/search',authMiddleware,async(req,res,next)=>{
+  try {
+    const user_id = req.user.id
+    const {keyword}=req.query
+    if (!keyword) {
+      return res.status(400).json({message:'keyword is required'})
+    }
+    const result = await pool.query(
+'SELECT * FROM messages WHERE user_id  = $1 AND content ILIKE $2 ORDER BY created_at DESC LIMIT 20',
+[user_id ,`%${keyword}%`]
+    )
+  } catch (error) {
+    next(error)
+  }
+})
 
 app.use((err, req, res, next) => {
   console.error(err.stack)
