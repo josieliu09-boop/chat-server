@@ -131,6 +131,27 @@ app.get('/messages/search',authMiddleware,async(req,res,next)=>{
     next(error)
   }
 })
+//统计接口
+app.get('/stats',authMiddleware,async(req,res,next)=>{
+  try {
+    const user_id = req.user.id
+    const messages = await pool.query(
+      'SELECT COUNT(*) as total_messages FROM messages WHERE user_id  = $1',
+      [user_id]
+    )
+    
+      const sessions = await pool.query(
+      'SELECT COUNT(*) as total_sessions FROM sessions WHERE user_id  = $1',
+      [user_id]
+    )
+    res.json({
+      total_messages:messages.rows[0].total_messages,
+      total_sessions:sessions.rows[0].total_sessions
+    })
+  } catch (error) {
+    next(error)
+  }
+})
 
 app.use((err, req, res, next) => {
   console.error(err.stack)
