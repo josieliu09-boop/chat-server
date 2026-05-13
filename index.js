@@ -1,3 +1,4 @@
+const WebSocket = require('ws')
 const morgan = require('morgan')
 const helmet = require('helmet')
 const rateLimit = require('express-rate-limit')
@@ -63,8 +64,23 @@ app.get('/messages/:session_id', authMiddleware, async (req, res, next) => {
   }
 })
 
-app.listen(3000, () => {
-  console.log('server started on port 3000')
+const server = require('http').createServer(app)
+const wss = new WebSocket.Server({server})
+
+wss.on('connection',(ws)=>{
+  console.log('client connected');
+  ws.on('message',(message)=>{
+    console.log('received:',message.toString());
+    ws.send('server received:',+message.toString())
+  })
+  ws.on('close',()=>{
+    console.log('client disconnected');
+    
+  })
+})
+server.listen(3000,()=>{
+  console.log('server started on port 3000');
+  
 })
 //保存会话
 app.post('/sessions', authMiddleware, async (req, res, next) => {
