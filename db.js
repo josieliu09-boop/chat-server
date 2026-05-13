@@ -1,8 +1,8 @@
 const { Pool } = require('pg')
 
 const pool = new Pool({
-  database: 'chatdb',
-  user: 'liuqian',
+  database: process.env.DATABASE_NAME || 'chatdb',
+  user: process.env.DATABASE_USER || 'liuqian'
 })
 
 module.exports = pool
