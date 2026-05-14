@@ -1,3 +1,4 @@
+const cron = require('node-cron')
 const multer = require('multer')
 const WebSocket = require('ws')
 const morgan = require('morgan')
@@ -16,6 +17,14 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'authorization']
 }))
 app.use(express.json())
+cron.schedule('0 0 * * *',async()=>{
+  console.log('running cleanup task...');
+  await pool.query(
+    'DELETE FROM messages WHERE created _at < NOW() - INTERVAL \'7 days\''
+  )
+  console.log('cleanup done');
+  
+})
 //限流规则
 const loginLimiter = rateLimit({
   WindowMs: 15 * 60 * 1000,//15分钟
